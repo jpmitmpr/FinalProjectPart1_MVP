@@ -1,13 +1,18 @@
-const { Sequelize } = require('sequelize');
-const config = require('../config/config');
-const env = process.env.NODE_ENV || 'development';
-const sequelize = new Sequelize(config[env]);
+import { Sequelize } from 'sequelize';
+import UserModel from './user.js';
+import PostModel from './post.js';
+import CommentModel from './comment.js';
 
-const User = require('./user')(sequelize);
-const Post = require('./post')(sequelize);
-const Comment = require('./comment')(sequelize);
+const sequelize = new Sequelize('sqlite::memory:', {
+  logging: false, // hides SQL logs
+});
 
-// Associations
+// Initialize models
+const User = UserModel(sequelize);
+const Post = PostModel(sequelize);
+const Comment = CommentModel(sequelize);
+
+// Set up associations
 User.hasMany(Post, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Post.belongsTo(User, { foreignKey: 'userId' });
 
@@ -17,10 +22,6 @@ Comment.belongsTo(User, { foreignKey: 'userId' });
 Post.hasMany(Comment, { foreignKey: 'postId', onDelete: 'CASCADE' });
 Comment.belongsTo(Post, { foreignKey: 'postId' });
 
-module.exports = {
-  sequelize,
-  Sequelize,
-  User,
-  Post,
-  Comment
-};
+// Export
+export { sequelize, User, Post, Comment };
+export default sequelize;
